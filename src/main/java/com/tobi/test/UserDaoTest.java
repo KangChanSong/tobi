@@ -2,15 +2,15 @@ package com.tobi.test;
 
 import java.sql.SQLException;
 
-import com.tobi.domain.SimpleConnectionMaker;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
+import com.tobi.domain.DaoFactory;
 
 public class UserDaoTest {
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
-		UserDao dao = new UserDao(new SimpleConnectionMaker());
+		UserDao dao = new DaoFactory().userDao(); 
 		
 		User user = new User();
 		user.setId("whiteshp");
