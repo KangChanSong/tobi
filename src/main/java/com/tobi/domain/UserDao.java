@@ -12,7 +12,11 @@ public class UserDao {
 	
 	private ConnectionMaker connectionMaker;
 	
-	public UserDao(ConnectionMaker connectionMaker) {
+	public UserDao() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	public void setConnectionMaker(ConnectionMaker connectionMaker) {
 		this.connectionMaker = connectionMaker;
 	}
 

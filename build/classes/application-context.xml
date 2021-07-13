@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+	
+	<bean id="realConnectionMaker" class="com.tobi.domain.SimpleConnectionMaker"></bean>
+	<bean id="connectionMaker" class="com.tobi.domain.CountingConnectionMaker">
+		<constructor-arg ref="realConnectionMaker"></constructor-arg>
+	</bean>
+	<bean id="userDao" class="com.tobi.domain.UserDao">
+		<property name="connectionMaker" ref="connectionMaker"></property>
+	</bean>
+
+</beans>
