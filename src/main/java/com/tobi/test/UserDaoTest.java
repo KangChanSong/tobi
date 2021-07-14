@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -87,33 +88,39 @@ public class UserDaoTest {
 		dao.get("unknown_id");
 	}
 	
-	private void userTest(UserDao dao) throws ClassNotFoundException, SQLException {
+	@Test
+	public void getAll() throws SQLException{
+		
+		dao.deleteAll();
+		assertThat(dao.getCount(), is(0));
+		
+		List<User> emptyLisy = dao.getAll();
+		assertThat(emptyLisy.size(), is(0));
 		
 		dao.add(user1);
+		List<User> userList1 = dao.getAll();
+		assertThat(dao.getCount(), is(1));
+		checkSameUser(user1, userList1.get(0));
 		
-		User user2= dao.get(user1.getId());
+		dao.add(user2);
+		List<User> userList2 = dao.getAll();
+		assertThat(dao.getCount(), is(2));
+		checkSameUser(user1, userList2.get(0));
+		checkSameUser(user2, userList2.get(1));
 		
-		assertThat(user2.getName(), is(user1.getName()));
-		assertThat(user2.getPassword(), is(user1.getPassword()));
+		dao.add(user3);
+		List<User> userList3 = dao.getAll();
+		assertThat(dao.getCount(), is(3));
+		checkSameUser(user1, userList3.get(0));
+		checkSameUser(user2, userList3.get(1));
+		checkSameUser(user3, userList3.get(2));
 		
 	}
 	
-	private static void singleToneTest(ApplicationContext context) {
-		UserDao conDaoA = context.getBean("userDao", UserDao.class);
-		UserDao conDaoB = context.getBean("userDao", UserDao.class);
+	public void checkSameUser(User user1, User user2) {
 		
-		DaoFactory factory = new DaoFactory();
-		UserDao daoA = factory.userDao();
-		UserDao daoB = factory.userDao();
-		
-		System.out.println(daoA);
-		System.out.println(daoB);
-		System.out.println(daoA == daoB);
-		System.out.println(daoA.equals(daoB));
-		
-		System.out.println(conDaoA);
-		System.out.println(conDaoB);
-		System.out.println(conDaoA == conDaoB);
-		System.out.println(conDaoA.equals(conDaoB));
+		assertThat(user1.getId(), is(user2.getId()));
+		assertThat(user1.getName(), is(user2.getName()));
+		assertThat(user1.getPassword(), is(user2.getPassword()));
 	}
 }
