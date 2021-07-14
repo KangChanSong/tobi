@@ -7,7 +7,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.tobi.domain.Calculator;
+import com.tobi.calculator.Calculator;
 
 public class CalcSumTest {
 	

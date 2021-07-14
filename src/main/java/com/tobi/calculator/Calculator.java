@@ -1,4 +1,4 @@
-package com.tobi.domain;
+package com.tobi.calculator;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
