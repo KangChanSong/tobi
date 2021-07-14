@@ -10,7 +10,7 @@ public class CountingDaoFactory {
 	public UserDao userDao() {
 		
 		UserDao userDao = new UserDao();
-		userDao.setConnectionMaker(connectionMaker());
+		userDao.setDataSource(connectionMaker());
 		return userDao;
 	}
 	
