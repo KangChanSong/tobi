@@ -2,21 +2,27 @@ package com.tobi.test;
 
 
 import static org.hamcrest.CoreMatchers.is;
+
 import static org.junit.Assert.assertThat;
 
 import java.sql.SQLException;
+
 import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
+import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.tobi.domain.DaoFactory;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
 
@@ -26,6 +32,9 @@ public class UserDaoTest {
 	
 	@Autowired
 	private UserDao dao;
+	
+	@Autowired
+	private DataSource dataSource;
 	
 	private User user1;
 	private User user2;
@@ -122,5 +131,22 @@ public class UserDaoTest {
 		assertThat(user1.getId(), is(user2.getId()));
 		assertThat(user1.getName(), is(user2.getName()));
 		assertThat(user1.getPassword(), is(user2.getPassword()));
+	}
+	
+	@Test(expected = DataAccessException.class)
+	public void duplicateKeyExceptionTest() {
+		
+		dao.deleteAll();
+		assertThat(dao.getCount(), is(0));
+
+		try {
+			dao.add(user1);
+			dao.add(user1);
+		} catch(DuplicateKeyException e) {
+			SQLException sqlEx = (SQLException)e.getRootCause();
+			SQLExceptionTranslator set = new SQLErrorCodeSQLExceptionTranslator(this.dataSource);
+			
+			assertThat(set.translate(null, null, sqlEx), is(DuplicateKeyException.class));
+		}
 	}
 }
