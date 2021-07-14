@@ -10,6 +10,7 @@
 		<property name="username" value="root"></property>
 		<property name="password" value="1234"></property>
 	</bean>
+	
 	<bean id="userDao" class="com.tobi.domain.UserDao">
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>

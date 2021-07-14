@@ -8,16 +8,22 @@ import java.sql.SQLException;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.tobi.domain.DaoFactory;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
 
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration("/test-application-context.xml")
 public class UserDaoTest {
 	
+	@Autowired
 	private UserDao dao;
 	
 	private User user1;
@@ -27,17 +33,12 @@ public class UserDaoTest {
 	@Before
 	public void setUp() {
 		
-		dao = new UserDao();
-		dao.setDataSource(new SingleConnectionDataSource(
-				"jdbc:mysql://localhost/testdb", "root", "1234", true	
-				));
-		
 		user1= new User("first", "첫째", "1234");
 		user2= new User("second", "둘째", "12344");
 		user3=  new User("third", "셋째", "123456");
 		
 	}
-
+	
 	@Test
 	public void addAndGet() throws SQLException, ClassNotFoundException {
 		
