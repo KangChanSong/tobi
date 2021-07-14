@@ -4,20 +4,20 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class Calculator {
+public class CalculatorTemplate {
 
-	public Integer calcSum(String filePath) throws IOException{
+	public <T> T calculate(String filePath, CalculatorCallBack<T> callback, T initVal) throws IOException{
 		
 		BufferedReader br = null;
 		
 		try {
 			br = new BufferedReader(new FileReader(filePath));
-			Integer sum = 0;
+			T res = initVal;
 			String line = null;
 			while((line = br.readLine()) != null) {
-				sum += Integer.valueOf(line);
+				res = callback.operate(line , res);
 			}
-			return sum;
+			return res;
 		} catch(IOException e) {
 			throw e;
 		} finally {
