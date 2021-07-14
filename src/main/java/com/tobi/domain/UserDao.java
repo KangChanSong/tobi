@@ -3,26 +3,30 @@ package com.tobi.domain;
 import java.sql.Connection;
 
 import com.mysql.cj.jdbc.Driver;
+import com.mysql.cj.x.protobuf.MysqlxPrepare.Prepare;
+
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 public class UserDao {
 	
-	private ConnectionMaker connectionMaker;
+	private DataSource dataSource;
 	
 	public UserDao() {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public void setConnectionMaker(ConnectionMaker connectionMaker) {
-		this.connectionMaker = connectionMaker;
+	public void setDataSource(DataSource dataSource) {
+		this.dataSource = dataSource;
 	}
 
-	public void add(User user) throws ClassNotFoundException, SQLException {
+	public void add(User user) throws SQLException {
 		
-		Connection c = connectionMaker.makeConnection();
+		Connection c = dataSource.getConnection();
 		
 		PreparedStatement ps = c.prepareStatement(
 				"insert into users(id, name, password) values(?,?,?)");
@@ -37,9 +41,9 @@ public class UserDao {
 		c.close();
 	}
 	
-	public User get(String id) throws ClassNotFoundException, SQLException{
+	public User get(String id) throws SQLException{
 		
-		Connection c = connectionMaker.makeConnection();
+		Connection c = dataSource.getConnection();
 		PreparedStatement ps = c.prepareStatement(
 				"select * from users where id = ?");
 		ps.setString(1, id);
@@ -58,4 +62,30 @@ public class UserDao {
 		return user;
 	}
 	
+	public void deleteAll() throws SQLException{
+		
+		Connection c = dataSource.getConnection();
+		PreparedStatement ps = c.prepareStatement("delete from users");
+		
+		ps.executeUpdate();
+		
+		ps.close();
+		c.close();
+	}
+	
+	public int getCount() throws SQLException{
+	
+		Connection c = dataSource.getConnection();
+		PreparedStatement ps = c.prepareStatement("select count(*) from users");
+		
+		ResultSet rs = ps.executeQuery();
+		rs.next();
+		int count = rs.getInt(1);
+		
+		rs.close();
+		ps.close();
+		c.close();
+		
+		return count;
+	}
 }
