@@ -34,6 +34,9 @@ public class UserDaoJdbc implements UserDao{
 			user.setId(rs.getString("id"));
 			user.setName(rs.getString("name"));
 			user.setPassword(rs.getString("password"));
+			user.setLevel(Level.valueOf(rs.getInt("level")));
+			user.setLogin(rs.getInt("login"));
+			user.setRecommend(rs.getInt("recommend"));
 			
 			return user;
 		}
@@ -42,8 +45,8 @@ public class UserDaoJdbc implements UserDao{
 	@Override
 	public void add( final User user) {
 	
-		this.jdbcTemplate.update("insert into users(id, name, password) values(?,?,?)",
-				user.getId(), user.getName(), user.getPassword());
+		this.jdbcTemplate.update("insert into users(id, name, password, level, login, recommend) values(?,?,?,?,?,?)",
+				user.getId(), user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend());
 	
 	}
 	
@@ -69,7 +72,15 @@ public class UserDaoJdbc implements UserDao{
 	public List<User> getAll(){
 		
 		return this.jdbcTemplate.query("select * from users", this.userMapper);
-		}	
+		}
 
+	@Override
+	public int update(User user) {
+		// TODO Auto-generated method stub
+		return this.jdbcTemplate.update("update users set name = ?, password = ?, level =? , login = ? , recommend = ? where id = ?"
+				, user.getName(), user.getPassword(), user.getLevel().intValue(), user.getLogin(), user.getRecommend(), user.getId());
+	}	
+
+	
 }
 
