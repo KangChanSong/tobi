@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -35,17 +40,19 @@ public class UserServiceTest {
 	@Autowired
 	private PlatformTransactionManager transactionManager;
 	
+	@Autowired
+	private MailSender mailSender;
+	
 	List<User> users;
 	
 	@Before
 	public void setUp() {
-		
 		users = Arrays.asList(
-				new User("aa", "AA", "p1", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER -1, 0),
-				new User("bb", "BB", "p2", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER, 0),
-				new User("cc", "CC", "p3", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD -1 ),
-				new User("dd", "DD", "p4", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD),
-				new User("ee", "EE", "p5", Level.GOLD, 100, 100)
+				new User("aa", "AA", "p1", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER -1, 0, "aa@n.com"),
+				new User("bb", "BB", "p2", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER, 0, "bb@n.com"),
+				new User("cc", "CC", "p3", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD -1 ,"cc@n.com"),
+				new User("dd", "DD", "p4", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD , "dd@n.com"),
+				new User("ee", "EE", "p5", Level.GOLD, 100, 100, "ee@n.com")
 				);
 	}
 	
@@ -57,9 +64,13 @@ public class UserServiceTest {
 	}
 	
 	@Test
+	@DirtiesContext
 	public void upgradeLevels() throws Exception {
 		userDao.deleteAll();
 		for(User user: users) {userDao.add(user);}
+		
+		MockMailSender mockMailSender = new MockMailSender();
+		userService.setMailSender(mockMailSender);
 		
 		userService.upgradeLevels();
 		
@@ -68,6 +79,12 @@ public class UserServiceTest {
 		checkLevel(users.get(2), false);
 		checkLevel(users.get(3), true);
 		checkLevel(users.get(4), false);
+		
+		List<String> request= mockMailSender.getRequest();
+		assertThat(request.size(), is(2) );
+		System.out.println(request.toString());
+		assertThat(request.get(0), is(users.get(1).getEmail()));
+		assertThat(request.get(1), is(users.get(3).getEmail()));
 		
 	}
 	
@@ -122,6 +139,7 @@ public class UserServiceTest {
 		UserService testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
 		testUserService.setTransactionManager(transactionManager);
+		testUserService.setMailSender(mailSender);
 		
 		userDao.deleteAll();
 		for(User user: users) userDao.add(user);
@@ -135,6 +153,27 @@ public class UserServiceTest {
 		
 		checkLevel(users.get(1), false);
 	}
+	
+	static class MockMailSender implements MailSender{
+		
+		private List<String> request = new ArrayList<>();
+		
+		public List<String> getRequest() {
+			return request;
+		}
+		
+		@Override
+		public void send(SimpleMailMessage message) throws MailException {
+			
+			request.add(message.getTo()[0]);
+		}
+
+		@Override
+		public void send(SimpleMailMessage[] message) throws MailException {
+		}
+		
+	}
+
 }
 
 

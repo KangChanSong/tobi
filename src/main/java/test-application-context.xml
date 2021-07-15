@@ -18,6 +18,7 @@
 	<bean id="userService" class="com.tobi.service.UserService">
 		<property name="userDao" ref="userDao"></property>
 		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="mailSender" ref="mailSender"></property>
 	</bean>
 	
 	<bean id="upgradePolicy" class="com.tobi.service.DefaultUserUpgradePolicy">
@@ -26,6 +27,9 @@
 	
 	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
 		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<bean id="mailSender" class="com.tobi.utils.DummyMailSender">
 	</bean>
 
 </beans>

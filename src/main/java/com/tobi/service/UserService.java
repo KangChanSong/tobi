@@ -1,20 +1,13 @@
 package com.tobi.service;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
+import org.springframework.mail.MailSender;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
@@ -25,6 +18,8 @@ public class UserService {
 	
 	PlatformTransactionManager transactionManager;
 	
+	MailSender mailSender;
+	
 	public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
 	public static final int MIN_RECOMMEND_FOR_GOLD = 30;
 
@@ -33,6 +28,9 @@ public class UserService {
 	}
 	public void setTransactionManager(PlatformTransactionManager transactionManager) {
 		this.transactionManager = transactionManager;
+	}
+	public void setMailSender(MailSender mailSender2) {
+		this.mailSender = mailSender2;
 	}
 
 	public void add(User user) {
@@ -80,7 +78,13 @@ public class UserService {
 	}
 	
 	private void sendUpgradeEmail(User user) {
-
+		SimpleMailMessage mailMessage = new SimpleMailMessage();
+		mailMessage.setTo(user.getEmail());
+		mailMessage.setFrom("useradmin@ksug.org");
+		mailMessage.setSubject("Upgrade 안내");
+		mailMessage.setText("사용자님의 등급이 " + user.getLevel().name() + "으로 변경되었습니다");
+		
+		this.mailSender.send(mailMessage);
 	}
 	
 
