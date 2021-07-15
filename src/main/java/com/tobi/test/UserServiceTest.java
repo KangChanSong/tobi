@@ -25,6 +25,8 @@ import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
 import com.tobi.service.UserService;
+import com.tobi.service.UserServiceImpl;
+import com.tobi.service.UserServiceTx;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/test-application-context.xml")
@@ -35,23 +37,26 @@ public class UserServiceTest {
 	private UserService userService;
 	
 	@Autowired
+	private UserServiceImpl userServiceImpl;
+	
+	@Autowired
 	private UserDao userDao;
 	
 	@Autowired
-	private PlatformTransactionManager transactionManager;
+	private MailSender mailSender;
 	
 	@Autowired
-	private MailSender mailSender;
+	private PlatformTransactionManager transactionManager;
 	
 	List<User> users;
 	
 	@Before
 	public void setUp() {
 		users = Arrays.asList(
-				new User("aa", "AA", "p1", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER -1, 0, "aa@n.com"),
-				new User("bb", "BB", "p2", Level.BASIC, UserService.MIN_LOGCOUNT_FOR_SILVER, 0, "bb@n.com"),
-				new User("cc", "CC", "p3", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD -1 ,"cc@n.com"),
-				new User("dd", "DD", "p4", Level.SILVER, 60, UserService.MIN_RECOMMEND_FOR_GOLD , "dd@n.com"),
+				new User("aa", "AA", "p1", Level.BASIC, UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER -1, 0, "aa@n.com"),
+				new User("bb", "BB", "p2", Level.BASIC, UserServiceImpl.MIN_LOGCOUNT_FOR_SILVER, 0, "bb@n.com"),
+				new User("cc", "CC", "p3", Level.SILVER, 60, UserServiceImpl.MIN_RECOMMEND_FOR_GOLD -1 ,"cc@n.com"),
+				new User("dd", "DD", "p4", Level.SILVER, 60, UserServiceImpl.MIN_RECOMMEND_FOR_GOLD , "dd@n.com"),
 				new User("ee", "EE", "p5", Level.GOLD, 100, 100, "ee@n.com")
 				);
 	}
@@ -70,9 +75,9 @@ public class UserServiceTest {
 		for(User user: users) {userDao.add(user);}
 		
 		MockMailSender mockMailSender = new MockMailSender();
-		userService.setMailSender(mockMailSender);
+		userServiceImpl.setMailSender(mockMailSender);
 		
-		userService.upgradeLevels();
+		userServiceImpl.upgradeLevels();
 		
 		checkLevel(users.get(0), false);
 		checkLevel(users.get(1), true);
@@ -120,7 +125,7 @@ public class UserServiceTest {
 
 	static class TestUserServiceException  extends RuntimeException{}
 	
-	static class TestUserService extends UserService{
+	static class TestUserService extends UserServiceImpl{
 		private String id;
 		
 		private TestUserService(String id) {
@@ -136,16 +141,20 @@ public class UserServiceTest {
 	
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		UserService testUserService = new TestUserService(users.get(3).getId());
+		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
 		testUserService.setUserDao(this.userDao);
-		testUserService.setTransactionManager(transactionManager);
 		testUserService.setMailSender(mailSender);
+		
+		//직점 오브젝트를 생성하는 것이기 때문에 수동으로 DI 해줘야함
+		UserServiceTx txUserService =  new UserServiceTx();
+		txUserService.setTransactionManager(transactionManager);
+		txUserService.setUserService(testUserService);
 		
 		userDao.deleteAll();
 		for(User user: users) userDao.add(user);
 			
 		try {
-			testUserService.upgradeLevels();
+			txUserService.upgradeLevels();
 			fail("TestUserServiceExecption Expected");
 		} catch(TestUserServiceException e) {
 			

@@ -15,10 +15,14 @@
 		<property name="dataSource" ref="dataSource"></property>
 	</bean>
 	
-	<bean id="userService" class="com.tobi.service.UserService">
+	<bean id="userServiceImpl" class="com.tobi.service.UserServiceImpl">
 		<property name="userDao" ref="userDao"></property>
-		<property name="transactionManager" ref="transactionManager"></property>
 		<property name="mailSender" ref="mailSender"></property>
+	</bean>
+	
+	<bean id="userService" class="com.tobi.service.UserServiceTx">
+		<property name="userService" ref="userServiceImpl"></property>
+		<property name="transactionManager" ref="transactionManager"></property>
 	</bean>
 	
 	<bean id="upgradePolicy" class="com.tobi.service.DefaultUserUpgradePolicy">
