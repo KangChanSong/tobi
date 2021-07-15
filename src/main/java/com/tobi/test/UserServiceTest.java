@@ -4,6 +4,11 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +17,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
@@ -35,9 +41,6 @@ public class UserServiceTest {
 	
 	@Autowired
 	private UserService userService;
-	
-	@Autowired
-	private UserServiceImpl userServiceImpl;
 	
 	@Autowired
 	private UserDao userDao;
@@ -71,23 +74,24 @@ public class UserServiceTest {
 	@Test
 	@DirtiesContext
 	public void upgradeLevels() throws Exception {
-		userDao.deleteAll();
-		for(User user: users) {userDao.add(user);}
+
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
 		
 		MockMailSender mockMailSender = new MockMailSender();
 		userServiceImpl.setMailSender(mockMailSender);
 		
+		MockUserDao mockUserDao = new MockUserDao(users);
+		userServiceImpl.setUserDao(mockUserDao);
+		
 		userServiceImpl.upgradeLevels();
 		
-		checkLevel(users.get(0), false);
-		checkLevel(users.get(1), true);
-		checkLevel(users.get(2), false);
-		checkLevel(users.get(3), true);
-		checkLevel(users.get(4), false);
+		List<User> updated = mockUserDao.getUpdated();
+		assertThat(updated.size(), is(2) );
+		assertThat(updated.get(0), is(users.get(1)));
+		assertThat(updated.get(1), is(users.get(3)));
 		
 		List<String> request= mockMailSender.getRequest();
 		assertThat(request.size(), is(2) );
-		System.out.println(request.toString());
 		assertThat(request.get(0), is(users.get(1).getEmail()));
 		assertThat(request.get(1), is(users.get(3).getEmail()));
 		
@@ -163,6 +167,47 @@ public class UserServiceTest {
 		checkLevel(users.get(1), false);
 	}
 	
+	static class MockUserDao implements UserDao{
+		
+		private List<User> users;
+		private List<User> updated = new ArrayList<>();
+		
+		private MockUserDao(List<User> users) {
+			this.users = users;
+		}
+		
+		public List<User> getUpdated(){
+			return this.updated;
+		}
+		@Override
+		public List<User> getAll() {
+			// TODO Auto-generated method stub
+			return this.users;
+		}
+		
+		@Override
+		public int update(User user) {
+			// TODO Auto-generated method stub
+			this.updated.add(user);
+			return 1;
+		}
+
+		@Override
+		public void add(User user)  {throw new UnsupportedOperationException();}
+
+		@Override
+		public User get(String id)  {throw new UnsupportedOperationException();}
+
+		@Override
+		public void deleteAll()  {throw new UnsupportedOperationException();}
+
+		@Override
+		public int getCount() {throw new UnsupportedOperationException();}
+
+		
+		
+	}
+	
 	static class MockMailSender implements MailSender{
 		
 		private List<String> request = new ArrayList<>();
@@ -182,6 +227,42 @@ public class UserServiceTest {
 		}
 		
 	}
+	
+	@Test
+	public void mockUpgradeLevels() throws Exception{
+		
+		UserServiceImpl userServiceImpl = new UserServiceImpl();
+		
+		//mock 오브젝트 생성
+		UserDao mockUserDao = mock(UserDao.class);
+		//getAll() 메서드를 호출하면 users 를 반환
+		when(mockUserDao.getAll()).thenReturn(this.users);
+		userServiceImpl.setUserDao(mockUserDao);
+		//mock 오브젝트 생성
+		MailSender mockMailSender = mock(MailSender.class);
+		userServiceImpl.setMailSender(mockMailSender);
+		
+		userServiceImpl.upgradeLevels();
+		
+		//update 메서드가 2번 호출됏나
+		verify(mockUserDao, times(2)).update(any(User.class));
+		//users.get(1) 을 파라미터로 받는 update 메서드가 호출됏나
+		verify(mockUserDao).update(users.get(1));
+		//level 확인
+		assertThat(users.get(1).getLevel(), is(Level.SILVER) );
+		verify(mockUserDao).update(users.get(3));
+		assertThat(users.get(3).getLevel(), is(Level.GOLD));
+		
+		ArgumentCaptor<SimpleMailMessage> mailMessageArg = 
+				ArgumentCaptor.forClass(SimpleMailMessage.class);
+		verify(mockMailSender, times(2)).send(mailMessageArg.capture());
+		List<SimpleMailMessage> mailMessages = mailMessageArg.getAllValues();
+		assertThat(mailMessages.get(0).getTo()[0], is(users.get(1).getEmail()));
+		assertThat(mailMessages.get(1).getTo()[0], is(users.get(3).getEmail()));
+		
+		
+	}
+	
 
 }
 
