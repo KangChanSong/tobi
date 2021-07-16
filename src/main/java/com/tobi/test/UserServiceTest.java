@@ -10,10 +10,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.catalina.core.ApplicationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
+import com.tobi.proxy.TransactionHandler;
 import com.tobi.service.UserService;
 import com.tobi.service.UserServiceImpl;
 import com.tobi.service.UserServiceTx;
@@ -38,6 +41,8 @@ import com.tobi.service.UserServiceTx;
 @ContextConfiguration("/test-application-context.xml")
 public class UserServiceTest {
 	
+	@Autowired
+	private ApplicationContext context;
 	
 	@Autowired
 	private UserService userService;
@@ -149,10 +154,15 @@ public class UserServiceTest {
 		testUserService.setUserDao(this.userDao);
 		testUserService.setMailSender(mailSender);
 		
-		//직점 오브젝트를 생성하는 것이기 때문에 수동으로 DI 해줘야함
-		UserServiceTx txUserService =  new UserServiceTx();
-		txUserService.setTransactionManager(transactionManager);
-		txUserService.setUserService(testUserService);
+		TransactionHandler txHandler =  new TransactionHandler();
+		txHandler.setTransactionManager(transactionManager);
+		txHandler.setTarget(testUserService);
+		txHandler.setPattern("upgradeLevels");
+		
+		UserService txUserService = (UserService)Proxy.newProxyInstance(
+				getClass().getClassLoader(),
+				new Class[] {UserService.class}
+				, txHandler);
 		
 		userDao.deleteAll();
 		for(User user: users) userDao.add(user);

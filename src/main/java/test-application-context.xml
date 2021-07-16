@@ -20,9 +20,11 @@
 		<property name="mailSender" ref="mailSender"></property>
 	</bean>
 	
-	<bean id="userService" class="com.tobi.service.UserServiceTx">
-		<property name="userService" ref="userServiceImpl"></property>
+	<bean id="userService" class="com.tobi.factorybean.TxProxyFactoryBean">
+		<property name="target" ref="userServiceImpl"></property>
 		<property name="transactionManager" ref="transactionManager"></property>
+		<property name="pattern" value="upgradeLevels"></property>
+		<property name="serviceInterface" value="com.tobi.service.UserService"></property>
 	</bean>
 	
 	<bean id="upgradePolicy" class="com.tobi.service.DefaultUserUpgradePolicy">
@@ -34,6 +36,10 @@
 	</bean>
 	
 	<bean id="mailSender" class="com.tobi.utils.DummyMailSender">
+	</bean>
+	
+	<bean id="message" class="com.tobi.factorybean.MessageFactoryBean">
+		<property name="text" value="Factory Bean"></property>
 	</bean>
 
 </beans>
