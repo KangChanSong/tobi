@@ -10,17 +10,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.catalina.core.ApplicationContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.TransientDataAccessException;
+import org.springframework.dao.TransientDataAccessResourceException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
@@ -28,21 +28,19 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
-import com.tobi.proxy.TransactionHandler;
 import com.tobi.service.UserService;
 import com.tobi.service.UserServiceImpl;
-import com.tobi.service.UserServiceTx;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/test-application-context.xml")
 public class UserServiceTest {
-	
-	@Autowired
-	private ApplicationContext context;
 	
 	@Autowired
 	private UserService userService;
@@ -51,7 +49,7 @@ public class UserServiceTest {
 	private UserDao userDao;
 	
 	@Autowired
-	private MailSender mailSender;
+	private UserService testUserService;
 	
 	@Autowired
 	private PlatformTransactionManager transactionManager;
@@ -134,41 +132,36 @@ public class UserServiceTest {
 
 	static class TestUserServiceException  extends RuntimeException{}
 	
-	static class TestUserService extends UserServiceImpl{
-		private String id;
-		
-		private TestUserService(String id) {
-			this.id = id;
-		}
+	static class TestUserServiceImpl extends UserServiceImpl{
+		private String id = "dd";
 		
 		@Override
 		protected void upgradeLevel(User user) {
 			if(user.getId().equals(id)) throw new TestUserServiceException();
 			super.upgradeLevel(user);
 		}
+		
+		@Override
+		public List<User> getAll() {
+			// TODO Auto-generated method stub
+			for(User user : super.getAll()) {
+				
+				super.update(user);
+			}
+			
+			return null;
+		}
 	}
 	
 	@Test
 	public void upgradeAllOrNothing() throws Exception {
-		UserServiceImpl testUserService = new TestUserService(users.get(3).getId());
-		testUserService.setUserDao(this.userDao);
-		testUserService.setMailSender(mailSender);
-		
-		TransactionHandler txHandler =  new TransactionHandler();
-		txHandler.setTransactionManager(transactionManager);
-		txHandler.setTarget(testUserService);
-		txHandler.setPattern("upgradeLevels");
-		
-		UserService txUserService = (UserService)Proxy.newProxyInstance(
-				getClass().getClassLoader(),
-				new Class[] {UserService.class}
-				, txHandler);
 		
 		userDao.deleteAll();
+		
 		for(User user: users) userDao.add(user);
 			
 		try {
-			txUserService.upgradeLevels();
+			testUserService.upgradeLevels();
 			fail("TestUserServiceExecption Expected");
 		} catch(TestUserServiceException e) {
 			
@@ -273,7 +266,37 @@ public class UserServiceTest {
 		
 	}
 	
+	@Test(expected = TransientDataAccessResourceException.class)
+	public void readOnlyTransactionAttribute() {
+		testUserService.getAll();
+	}
+	
+	@Test(expected = TransientDataAccessException.class)
+	@Transactional(readOnly = true)
+	public void transactionSync() {
 
+		userService.deleteAll();
+
+		
+	}
+	
+	@Test
+	public void rollbackTEst() {
+		
+		//트랜잭션 시작
+		TransactionStatus txStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+		
+		try {
+			userService.deleteAll();
+			userService.add(users.get(1));
+			userService.add(users.get(2));
+			
+		} finally {
+			transactionManager.rollback(txStatus);
+		}
+	}
+	
+	
 }
 
 

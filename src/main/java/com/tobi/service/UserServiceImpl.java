@@ -6,6 +6,7 @@ import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import com.tobi.domain.Level;
@@ -70,6 +71,26 @@ public class UserServiceImpl implements UserService{
 		mailMessage.setText("사용자님의 등급이 " + user.getLevel().name() + "으로 변경되었습니다");
 		
 		this.mailSender.send(mailMessage);
+	}
+	@Override
+	public User get(String id) {
+		// TODO Auto-generated method stub
+		return userDao.get(id);
+	}
+	@Override
+	public List<User> getAll() {
+		// TODO Auto-generated method stub
+		return userDao.getAll();
+	}
+	@Override
+	public void deleteAll() {
+		// TODO Auto-generated method stub
+		userDao.deleteAll();
+	}
+	@Override
+	public void update(User user) {
+		// TODO Auto-generated method stub
+		userDao.update(user);
 	}
 	
 
