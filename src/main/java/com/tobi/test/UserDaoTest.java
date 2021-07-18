@@ -2,30 +2,25 @@ package com.tobi.test;
 
 
 import static org.hamcrest.CoreMatchers.is;
-
 import static org.junit.Assert.assertThat;
 
+import java.lang.reflect.Field;
 import java.sql.SQLException;
-
 import java.util.List;
-
-import javax.sql.DataSource;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.support.SQLErrorCodeSQLExceptionTranslator;
-import org.springframework.jdbc.support.SQLExceptionTranslator;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
+import com.tobi.domain.UserDaoJdbc;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("/test-application-context.xml")
@@ -34,9 +29,6 @@ public class UserDaoTest {
 	@Autowired
 	private UserDao dao;
 	
-	@Autowired
-	private DataSource dataSource;
-	
 	private User user1;
 	private User user2;
 	private User user3;
@@ -44,12 +36,18 @@ public class UserDaoTest {
 	@Before
 	public void setUp() {
 		
-		user1= new User("first", "첫째", "1234", Level.BASIC, 1 , 0);
-		user2= new User("second", "둘째", "12344", Level.SILVER, 55, 10);
-		user3=  new User("third", "셋째", "123456", Level.GOLD, 100, 40);
+		user1= new User("first", "첫째", "1234", Level.BASIC, 1 , 0, "first@nacer.com");
+		user2= new User("second", "둘째", "12344", Level.SILVER, 55, 10, "second@naver.com");
+		user3=  new User("third", "셋째", "123456", Level.GOLD, 100, 40, "third@naver.com");
 		
 	}
 	
+	@Test
+	public void bean() {
+		
+		assertThat(dao.getClass().getName(), is("com.tobi.domain.UserDaoJdbc"));
+	}
+
 	@Test
 	public void addAndGet() throws SQLException, ClassNotFoundException {
 		
