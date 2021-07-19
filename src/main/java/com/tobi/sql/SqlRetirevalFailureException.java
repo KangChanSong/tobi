@@ -12,4 +12,8 @@ public class SqlRetirevalFailureException extends RuntimeException{
 		// TODO Auto-generated constructor stub
 		super(msg, cause);
 	}
+	
+	public SqlRetirevalFailureException(Throwable cause) {
+		super(cause);
+	}
 }

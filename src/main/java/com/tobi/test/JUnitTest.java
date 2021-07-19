@@ -9,6 +9,7 @@ import org.junit.Test;
 
 public class JUnitTest {
 
+	
 	private static JUnitTest testObject;
 	
 	@Test

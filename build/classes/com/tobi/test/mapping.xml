@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapping PUBLIC "-//EXOLAB/Castor Object Mapping DTD Version 1.0//EN"
+ 	"http://castor.org/mapping.dtd">
+<mapping>
+	<class name="com.tobi.domain.sql.jaxb.SqlMap">
+		<map-to xml="sqlMap"/>
+		<field name="sql" type="com.tobi.domain.sql.jaxb.SqlType" required="true" collection="arraylist">
+			<bind-xml name="sql" node="element"></bind-xml>
+		</field>
+	</class>
+	<class name="com.tobi.domain.sql.jaxb.SqlType">
+		<map-to xml="sql"></map-to>
+		<field name="key" type="string" required="true">
+			<bind-xml name="key" node="attribute"></bind-xml>
+		</field>
+		<field name="value" type="string" required="true">
+			<bind-xml node="text"/>
+		</field>
+	</class>
+</mapping>

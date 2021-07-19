@@ -19,9 +19,14 @@
 		<property name="sqlService" ref="sqlService"></property>
 	</bean>
 	
-	<bean id="sqlService" class="com.tobi.service.XmlSqlService">
+	<bean id="sqlService" class="com.tobi.service.OxmSqlService">
+	<property name="unmarshaller" ref="unmarshaller"></property>
+	</bean>
+	
+	<bean id="sqlReader" class="com.tobi.sql.JaxbXmlSqlReader">
 		<property name="sqlMapFile" value="sqlmap.xml"></property>
 	</bean>
+	<bean id="sqlRegistry" class="com.tobi.sql.HashMapSqlRegistry"></bean>
 	
 	
 	<bean id="userService" class="com.tobi.service.UserServiceImpl">
@@ -73,6 +78,10 @@
 		</tx:attributes>
 	</tx:advice>
 	 -->
+	 <bean id="unmarshaller" class="org.springframework.oxm.jaxb.Jaxb2Marshaller">
+	 	<property name="contextPath" value="com.tobi.domain.sql.jaxb"></property>
+	 </bean>
+	 
 	<tx:annotation-driven/>
 
 </beans>
