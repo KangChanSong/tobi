@@ -3,7 +3,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:aop="http://www.springframework.org/schema/aop"
 	xmlns:tx="http://www.springframework.org/schema/tx"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
 		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.1.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.1.xsd">
 	
@@ -21,12 +23,13 @@
 	
 	<bean id="sqlService" class="com.tobi.service.OxmSqlService">
 	<property name="unmarshaller" ref="unmarshaller"></property>
+	<property name="sqlRegistry" ref="sqlRegistry"></property>
 	</bean>
 	
 	<bean id="sqlReader" class="com.tobi.sql.JaxbXmlSqlReader">
 		<property name="sqlMapFile" value="sqlmap.xml"></property>
 	</bean>
-	<bean id="sqlRegistry" class="com.tobi.sql.HashMapSqlRegistry"></bean>
+	<bean id="sqlRegistry" class="com.tobi.sql.ConcurrentHashMapSqlRegistry"></bean>
 	
 	
 	<bean id="userService" class="com.tobi.service.UserServiceImpl">
@@ -83,5 +86,9 @@
 	 </bean>
 	 
 	<tx:annotation-driven/>
+	
+	<jdbc:embedded-database id="embeddedDatabase" type="HSQL">
+	 <jdbc:script location="classpath:/schema.sql"/>
+	</jdbc:embedded-database>
 
 </beans>
