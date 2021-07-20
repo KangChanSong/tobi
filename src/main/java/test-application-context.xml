@@ -29,7 +29,9 @@
 	<bean id="sqlReader" class="com.tobi.sql.JaxbXmlSqlReader">
 		<property name="sqlMapFile" value="sqlmap.xml"></property>
 	</bean>
-	<bean id="sqlRegistry" class="com.tobi.sql.ConcurrentHashMapSqlRegistry"></bean>
+	<bean id="sqlRegistry" class="com.tobi.sql.EmbeddedDbSqlRegistry">
+		<property name="dataSource" ref="embeddedDatabase"></property>
+	</bean>
 	
 	
 	<bean id="userService" class="com.tobi.service.UserServiceImpl">
@@ -88,7 +90,7 @@
 	<tx:annotation-driven/>
 	
 	<jdbc:embedded-database id="embeddedDatabase" type="HSQL">
-	 <jdbc:script location="classpath:/schema.sql"/>
+	 <jdbc:script location="classpath:com/tobi/test/sqlRegistrySchema.sql"/>
 	</jdbc:embedded-database>
 
 </beans>

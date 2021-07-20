@@ -6,14 +6,20 @@ import javax.sql.DataSource;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.simple.SimpleJdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 public class EmbeddedDbSqlRegistry implements UpdatableSqlRegistry{
 	
 	SimpleJdbcTemplate jdbc;
+	TransactionTemplate transactionTemplate;
 	
 	public void setDataSource(DataSource dataSource) {
 		// TODO Auto-generated method stub
 		jdbc = new SimpleJdbcTemplate(dataSource);
+		transactionTemplate = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
 	}
 
 	@Override
@@ -46,9 +52,17 @@ public class EmbeddedDbSqlRegistry implements UpdatableSqlRegistry{
 	@Override
 	public void updateSql(Map<String, String> sqlMap) throws SqlUpdateFailureException {
 		// TODO Auto-generated method stub
-		for(Map.Entry<String, String> entry : sqlMap.entrySet()){
-			updateSql(entry.getKey(), entry.getValue());
-		}
+		
+		transactionTemplate.execute(new TransactionCallbackWithoutResult() {
+			
+			@Override
+			protected void doInTransactionWithoutResult(TransactionStatus arg0) {
+				// TODO Auto-generated method stub
+				for(Map.Entry<String, String> entry : sqlMap.entrySet()){
+					updateSql(entry.getKey(), entry.getValue());
+				}
+			}
+		});
 	}
 
 }

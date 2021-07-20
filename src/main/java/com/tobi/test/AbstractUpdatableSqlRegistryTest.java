@@ -58,7 +58,7 @@ public abstract class AbstractUpdatableSqlRegistryTest {
 		sqlRegistry.updateSql("SQL@##EFF", "Modified2");
 	}
 	
-	private void checkFind(String exp1 , String exp2, String exp3) {
+	protected void checkFind(String exp1 , String exp2, String exp3) {
 		
 		assertThat(sqlRegistry.findSql("KEY1"), is(exp1));
 		assertThat(sqlRegistry.findSql("KEY2"), is(exp2));
