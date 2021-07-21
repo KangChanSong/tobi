@@ -32,6 +32,7 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import com.tobi.config.TestApplicationContext;
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
@@ -39,7 +40,7 @@ import com.tobi.service.UserService;
 import com.tobi.service.UserServiceImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("/test-application-context.xml")
+@ContextConfiguration(classes= TestApplicationContext.class)
 public class UserServiceTest {
 	
 	@Autowired
@@ -132,7 +133,7 @@ public class UserServiceTest {
 
 	static class TestUserServiceException  extends RuntimeException{}
 	
-	static class TestUserServiceImpl extends UserServiceImpl{
+	public static class TestUserServiceImpl extends UserServiceImpl{
 		private String id = "dd";
 		
 		@Override
