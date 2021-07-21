@@ -25,6 +25,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,7 +33,9 @@ import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import com.tobi.config.TestApplicationContext;
+import com.tobi.config.AppContext;
+import com.tobi.config.SqlServiceContext;
+import com.tobi.config.TestAppContext;
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
@@ -40,7 +43,8 @@ import com.tobi.service.UserService;
 import com.tobi.service.UserServiceImpl;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes= TestApplicationContext.class)
+@ContextConfiguration(classes= AppContext.class)
+@ActiveProfiles("test")
 public class UserServiceTest {
 	
 	@Autowired

@@ -3,18 +3,17 @@ package com.tobi.domain;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.mockito.internal.util.collections.Sets;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.stereotype.Repository;
 
-import com.mysql.cj.exceptions.MysqlErrorNumbers;
-import com.tobi.exceptions.DuplicatedUserIdException;
 import com.tobi.sql.SqlService;
 
+@Repository
 public class UserDaoJdbc implements UserDao{
 	
 	private JdbcTemplate jdbcTemplate;
@@ -23,13 +22,10 @@ public class UserDaoJdbc implements UserDao{
 		// TODO Auto-generated constructor stub
 	}
 
+	@Autowired
 	private SqlService sqlService;
 	
-	public void setSqlService(SqlService sqlService) {
-		this.sqlService = sqlService;
-	}
-	
-	
+	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		
 		this.jdbcTemplate = new JdbcTemplate(dataSource);

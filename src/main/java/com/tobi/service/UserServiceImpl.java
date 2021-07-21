@@ -2,20 +2,22 @@ package com.tobi.service;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.stereotype.Service;
 
 import com.tobi.domain.Level;
 import com.tobi.domain.User;
 import com.tobi.domain.UserDao;
 
+@Service("userService")
 public class UserServiceImpl implements UserService{
 	
+	@Autowired
 	UserDao userDao;
+	
+	@Autowired
 	MailSender mailSender;
 	
 	public static final int MIN_LOGCOUNT_FOR_SILVER = 50;
