@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.test.context.ActiveProfiles;
@@ -31,6 +32,9 @@ public class UserDaoTest {
 	@Autowired
 	private UserDao userDao;
 	
+	@Autowired
+	private DefaultListableBeanFactory beanFactory;
+	
 	private User user1;
 	private User user2;
 	private User user3;
@@ -46,9 +50,10 @@ public class UserDaoTest {
 	
 	@Test
 	public void bean() {
+		for(String s : beanFactory.getBeanDefinitionNames()) {
+			System.out.println(s + " \t " + beanFactory.getBean(s).getClass().getName());
+		}
 		
-		assertThat(userDao.getClass().getName(), is("com.tobi.domain.User"
-				+ "DaoJdbc"));
 	}
 
 	@Test
